@@ -8,6 +8,7 @@ This Blender 2.90 Addon is my attempt at implementing similar functionality to M
 * Change number of segments using (CTRL+MouseWheel).
 * Adjust the pinch value using (CTRL+Mouse).
 * Right clicking anywhere in the 3d view opens a popup to tweak the number of segments and the pinch value.
+  * Left click anywhere to close
 * Switch between the following using (E):
   * None
   * Even Spacing between the new segments (Calculated using the shortest selected edge).
