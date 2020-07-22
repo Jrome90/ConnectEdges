@@ -4,7 +4,7 @@ This Blender 2.90 Addon is my attempt at implementing similar functionality to M
 ## Features:
 * Select and deselect edges while the operator is running (Enable in addon preferences).
   * Selecting and deselecting breaks "adjust last operator" and "repeat last operator" for the operator session it was used.
-  * It can be slow with high poly meshes (Has to iterate through all edges to find the selected edges)
+  * It will be slow with high poly meshes (Has to iterate through all edges to find the selected edges)
 * Change number of segments using (CTRL+MouseWheel).
 * Adjust the pinch value using (CTRL+Mouse).
 * Right clicking anywhere in the 3d view opens a popup to tweak the number of segments and the pinch value.
