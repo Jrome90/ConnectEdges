@@ -24,3 +24,5 @@ This Blender 2.90 Addon is my attempt at implementing similar functionality to M
 ## To use:
  * select the edges you want to connect and then press ALT+C
  * Hit the Enter Key to accept or the ESC Key to cancel.
+
+### Uses Jayanam's "Blender UI Widgets" library which can be found here: https://github.com/jayanam/bl_ui_widgets
