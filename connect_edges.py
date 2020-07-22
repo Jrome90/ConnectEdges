@@ -186,7 +186,6 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.subject.register(self.hud.update_text)
 
     def invoke(self, context, event):
-        print("Invoke")
         self.init_hud(context)
         self.execute(context)
         context.window_manager.modal_handler_add(self)
