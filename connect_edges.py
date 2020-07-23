@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import bpy
 import bmesh
-from bpy.props import IntProperty, BoolProperty, EnumProperty
+from bpy.props import IntProperty, EnumProperty
 from bmesh.types import *
 from mathutils import Vector
 
@@ -37,7 +37,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
 
     # Unmodifed bmesh data used to initialize
     initial_bm = None
-
+    mesh = None
     draw_handle_hud = None
     hud = None
     # Event Object
@@ -47,7 +47,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
 
         # Bmesh to modify
         self.bm = None
-
+       
         # Map each face to its selected edges
         # Once these edges are sub'd the indices are no longer considered valid
         self.edges_lookup: Dict[int, List[int]] = {}
@@ -120,6 +120,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         mesh = context.active_object.data
         cls.initial_bm = bmesh.new()
         cls.initial_bm.from_mesh(mesh)
+        cls.mesh = mesh.copy()
 
     @classmethod
     def poll(cls, context):
@@ -156,9 +157,10 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         return {'FINISHED'}
 
     def init_hud(self, context):
-        self.hud = TextLayoutPanel(10, context.area.height - 100, (100, 100))
+        addon_prefs = get_addon_prefs(context)
+        self.hud = TextLayoutPanel(10, 100, (100, addon_prefs.hud_offset))
 
-        show_keys = get_addon_prefs(context).show_keys
+        show_keys = addon_prefs.show_keys
 
         draw_segs = TextLabelProperty(0, 0, 50, 16, context, 
                                       self.segments, lambda new_val: "Segments: {0}".format(new_val), 
@@ -186,7 +188,6 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.subject.register(self.hud.update_text)
 
     def invoke(self, context, event):
-        print("Invoke")
         self.init_hud(context)
         self.execute(context)
         context.window_manager.modal_handler_add(self)
@@ -218,7 +219,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             bm = bmesh.new()
             bm = bmesh.from_edit_mesh(mesh)
 
-            ensure(self.bm)
+            ensure(bm)
 
             selected = set()
             deselected = set()
@@ -606,6 +607,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='EDIT')
 
             self.bm = bmesh.from_edit_mesh(mesh)
+            
             bm = self.bm
             self.clear()
             selected_edges = self.selected_edges
