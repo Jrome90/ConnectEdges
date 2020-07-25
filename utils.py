@@ -3,6 +3,45 @@ import bmesh
 from bmesh.types import *
 from mathutils import Vector, Matrix
 
+# Adapted from blender source code
+def bmesh_edge_ring_walker(edge: BMEdge):
+    def rewind(loop):
+        visited = set()
+        visited.add(loop.edge)
+        loop = loop.link_loop_radial_next
+
+        next_loop = loop
+
+        while True:
+            l = next_loop.link_loop_radial_next.link_loop_next.link_loop_next
+            if len(l.face.verts) != 4 and (not l.edge.is_manifold or not l.edge.is_boundary):
+                l = next_loop.link_loop_next.link_loop_next
+
+            if len(l.face.verts) == 4 and (l.edge.is_manifold or l.edge.is_boundary) and l.edge not in visited:
+                next_loop = l
+                visited.add(next_loop.edge)
+            else:
+                break
+
+        return next_loop
+
+    loop = edge.link_loops[0]
+    next_loop = rewind(loop).link_loop_radial_next
+    visited = set()
+    visited.add(next_loop.edge)
+
+    while True:
+        yield next_loop
+        l = next_loop.link_loop_radial_next.link_loop_next.link_loop_next
+
+        if len(l.face.verts) != 4 and (not l.edge.is_manifold or not l.edge.is_boundary):
+            l = next_loop.link_loop_next.link_loop_next
+
+        if len(l.face.verts) == 4 and (l.edge.is_manifold or l.edge.is_boundary) and l.edge not in visited:
+            next_loop = l
+            visited.add(next_loop.edge)
+        else:
+            break
 
 def bmesh_face_loop_walker(face: BMFace):
     # Get the first loop
