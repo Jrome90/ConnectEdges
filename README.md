@@ -13,6 +13,12 @@ This Blender 2.90 Addon is my attempt at implementing similar functionality to M
   * None
   * Even Spacing between the new segments (Calculated using the shortest selected edge).
   * Even spacing between the last vertex and the nearest segment (Calculated using the same method as above).
+  
+## New Features:
+ Version: 0.2.0
+ * Left click on a single edge to ring select and connect.
+ * Shift Left click to add another edge selection.
+ * Left click + CTRL+ALT+SHIFT to add another ring selection.
 ## Missing Features
 * Slide
 
