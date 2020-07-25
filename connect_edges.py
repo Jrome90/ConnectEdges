@@ -10,6 +10,7 @@ from mathutils import Vector
 
 from .ui import TextLayoutPanel, TextLabelProperty, TextLabel, TextBox
 from .utils import (bmesh_face_loop_walker,
+                    bmesh_edge_ring_walker,
                     bmesh_subdivide_edge,
                     scale_verts_along_edge,
                     ensure,
@@ -37,7 +38,6 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
 
     # Unmodifed bmesh data used to initialize
     initial_bm = None
-    mesh = None
     draw_handle_hud = None
     hud = None
     # Event Object
@@ -120,7 +120,6 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         mesh = context.active_object.data
         cls.initial_bm = bmesh.new()
         cls.initial_bm.from_mesh(mesh)
-        cls.mesh = mesh.copy()
 
     @classmethod
     def poll(cls, context):
@@ -150,7 +149,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         for bm_edge in self.initial_bm.edges:
             if bm_edge.select:
                 self.selected_edges.add(bm_edge.index)
-                bm_edge.select = False
+                bm_edge.select_set(False)
 
         self.initial_bm.select_flush_mode()
         self.connect_edges(context)
@@ -213,16 +212,20 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
 
             return {'RUNNING_MODAL'}
 
+        if self.selection_enabled(context):
+            if (event.type == 'LEFTMOUSE'):
+                self.selection_changed = True
+                return {'PASS_THROUGH'}
+
         if self.selection_changed:
             context.active_object.update_from_editmode()
             mesh = context.active_object.data
             bm = bmesh.new()
             bm = bmesh.from_edit_mesh(mesh)
 
-            ensure(bm)
-
             selected = set()
             deselected = set()
+
             # Loop through all edges and get the recently selected or deselected edges
             for bm_edge in bm.edges:
                 edge_idx = bm_edge.index
@@ -241,15 +244,15 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
                     deselected.add(deselected_edge_idx)
 
             if selected or deselected:
+                if len(selected) == 1 and not (event.shift):
+                    edges = [loop.edge.index for loop in bmesh_edge_ring_walker(self.initial_bm.edges[selected.pop()])]
+                    selected.update(edges)
+
                 self.selected_edges.update(selected)
                 self.selected_edges.difference_update(deselected)
                 self.selection_changed = False
+                
                 return self.connect_edges(context)
-
-        if self.selection_enabled(context):
-            if (event.type == 'LEFTMOUSE' and event.value == 'PRESS') or (event.type == 'LEFTMOUSE' and event.alt):
-                self.selection_changed = True
-                return {'PASS_THROUGH'}
 
         if self.mouse_started and event.type == 'MOUSEMOVE' and not event.alt:
             delta_x = event.mouse_x - self.start_mouse_pos.x
@@ -333,13 +336,15 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.initial_bm.free()
 
     def open_input(self, mouse_pos, context):
-        self.segment_input = TextBox(context, 0, 0, 100, 24, "Segments", 3)
+        self.segment_input = TextBox(context, 0, 0, 100, 30, "Segments", 3)
         self.segment_input.text = str(self.segments)
+        self.segment_input.text_size = 18
         self.segment_input.set_location(mouse_pos.x + 20, context.area.height - mouse_pos.y + 20)
         self.segment_input.set_text_changed(self.on_segment_input_changed)
 
-        self.pinch_input = TextBox(context, 0, 0, 100, 24, "Pinch", 4)
+        self.pinch_input = TextBox(context, 0, 0, 100, 30, "Pinch", 4)
         self.pinch_input.text = str(self.pinch)
+        self.pinch_input.text_size = 18
         self.pinch_input.set_location(mouse_pos.x + 20, context.area.height - mouse_pos.y + 54)
         self.pinch_input.set_text_changed(self.on_pinch_input_changed)
 
@@ -437,6 +442,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
                             self.tagged.add(bm_element.index)
                             self.selected_edge_lookup[bm_element.index] = next_edge_idx
                             bm_element.select = True
+                            #self.bm.select_flush_mode()
 
                     order_verts_on_edge(start.co, end.co, new_verts)
 
@@ -624,7 +630,8 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
                         else:
                             self.edges_lookup[bm_face.index].append(bm_edge.index)
 
-                    bm_edge.select = True
+                    bm_edge.select= True
+                    #self.bm.select_flush_mode()
                     self.tagged.add(bm_edge.index)
 
                 # Filter out faces with only one selected edge
@@ -632,14 +639,22 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             elif len(selected_edges) == 1:
                 # Select the only edge
                 bm.edges[selected_edges.pop()].select = True
+                
 
             order_selected_edges_ccw(bm)
 
             self.create_geometry()
 
             self.pinch_edges()
-
+            # self.bm.verts.index_update()
+            # self.bm.edges.index_update()
+            # self.bm.faces.index_update()
+            # for edge in self.bm.edges:
+            #     if edge.select:
+            #         print("Selected: {}".format(edge.index))
+            self.bm.select_flush_mode()
             bmesh.update_edit_mesh(mesh, True)
+
 
         try:
             do_connect_edges()
