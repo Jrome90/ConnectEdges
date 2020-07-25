@@ -125,6 +125,55 @@ class TextBox(BL_UI_Textbox):
 
         self._textpos = [x, y]
 
+    def update_label(self):
+        y_screen_flip = self.get_area_height() - self.y_screen
+
+        size = blf.dimensions(0, self._label)
+
+        self._label_width = size[0]*2.2 + 12
+
+        # bottom left, top left, top right, bottom right
+        vertices_outline = (
+                    (self.x_screen, y_screen_flip), 
+                    (self.x_screen + self.width + self._label_width, y_screen_flip), 
+                    (self.x_screen + self.width + self._label_width, y_screen_flip - self.height),
+                    (self.x_screen, y_screen_flip - self.height))
+                    
+        self.batch_outline = batch_for_shader(self.shader, 'LINE_LOOP', {"pos" : vertices_outline})
+
+        indices = ((0, 1, 2), (2, 3, 1))
+
+        lb_x = self.x_screen + self.width
+
+        # bottom left, top left, top right, bottom right
+        vertices_label_bg = (
+                    (lb_x, y_screen_flip), 
+                    (lb_x + self._label_width, y_screen_flip), 
+                    (lb_x, y_screen_flip - self.height),
+                    (lb_x + self._label_width, y_screen_flip - self.height))
+                    
+        self.batch_label_bg = batch_for_shader(self.shader, 'TRIS', {"pos" : vertices_label_bg}, indices=indices)
+
+    def get_carret_pos_px(self):
+        size_all = blf.dimensions(0, self._text)
+        size_to_carret = blf.dimensions(0, self._text[:self._carret_pos])
+        return self.x_screen + (self.width / 2.0) - (size_all[0] / 2.0) + size_to_carret[0] + 5
+
+    def update_carret(self):
+        y_screen_flip = self.get_area_height() - self.y_screen
+
+        x = self.get_carret_pos_px()
+
+        text_height = blf.dimensions(0, self._label)[0]
+        # bottom left, top left, top right, bottom right
+        vertices = (
+            (x, y_screen_flip - 6),
+            (x, (y_screen_flip - self.height) + 6)
+        )
+
+        self.batch_carret = batch_for_shader(
+            self.shader, 'LINES', {"pos": vertices})
+
     def draw(self):
         BL_UI_Widget.draw(self)
 
