@@ -1,5 +1,4 @@
 # Connect Edges
-This Blender 2.90 Addon is my attempt at implementing similar functionality to Max's Connect Edges tool.
 
 ## Features:
 * Select and deselect edges while the operator is running (Enable in addon preferences).
