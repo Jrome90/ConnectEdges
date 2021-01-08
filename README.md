@@ -1,5 +1,4 @@
 # Connect Edges
-This Blender 2.90 Addon is my attempt at implementing similar functionality to Max's Connect Edges tool.
 
 ## Features:
 * Select and deselect edges while the operator is running (Enable in addon preferences).
@@ -13,6 +12,18 @@ This Blender 2.90 Addon is my attempt at implementing similar functionality to M
   * None
   * Even Spacing between the new segments (Calculated using the shortest selected edge).
   * Even spacing between the last vertex and the nearest segment (Calculated using the same method as above).
+  
+## New Features:
+ Version: 0.2.0
+ * Left click on a single edge to ring select and connect.
+ * Shift Left click to add another edge selection.
+ * Left click + CTRL+ALT+SHIFT to add another ring selection.
+
+ Version: 0.2.1
+ * Changed wording of the UI from Accept to Confirm
+ * Spacebar is now used to confirm the operation instead on the enter key.
+ * This addon should work better with other addons that access bmesh data.
+
 ## Missing Features
 * Slide
 
@@ -24,6 +35,6 @@ This Blender 2.90 Addon is my attempt at implementing similar functionality to M
 
 ## To use:
  * select the edges you want to connect and then press ALT+C
- * Hit the Enter Key to accept or the ESC Key to cancel.
+ * Hit the Spacebar to confirm or the ESC Key to cancel.
 
 ### Uses Jayanam's "Blender UI Widgets" library which can be found here: https://github.com/jayanam/bl_ui_widgets

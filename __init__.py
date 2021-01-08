@@ -16,7 +16,7 @@ bl_info = {
     "author" : "Jrome",
     "description" : "Creates new edges between adjacent pairs of selected edges",
     "blender" : (2, 90, 0),
-    "version" : (0, 2, 0),
+    "version" : (0, 2, 1),
     "location" : "Mesh > Edge > Connect Edges",
     "warning" : "",
     "category" : "Mesh"

@@ -178,7 +178,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.hud.register("Even", draw_even)
 
         if show_keys:
-            label = TextLabel(0, 0, 50, 16, "Accept (Enter) Cancel (ESC)", context)
+            label = TextLabel(0, 0, 50, 16, "Confirm (Space) Cancel (ESC)", context)
             self.hud.register("label", label)
 
         self.hud.layout()
@@ -300,7 +300,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             self.even = value
             self.pinch_edges(context, update=True)
 
-        elif event.type == 'RET' and event.value == 'PRESS':
+        elif event.type == 'SPACE' and event.value == 'PRESS':
             self.finish(context)
             return {'FINISHED'}
 
@@ -319,6 +319,10 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.bm.free()
         self.initial_bm.free()
         self.unregister_handlers(context)
+
+        # Switch to object and then back to edit to fix the bmesh has been removed error with some addon that use the bmesh data. (Hacky?) 
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.mode_set(mode='EDIT')
 
     def cancelled(self, context):
         self.clear()
