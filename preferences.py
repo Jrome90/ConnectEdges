@@ -8,7 +8,7 @@ class ConnectEdgesPreferences(AddonPreferences):
 
     selection_enabled: BoolProperty(name="Enable Selection", default=False, 
                                     description="Enable selection while the operator is running")
-    show_keys: BoolProperty(name="Display Hotkeys", default=True, description="Display the hotkeys in the HUD")
+    show_keys: BoolProperty(name="Display Hotkeys", default=False, description="Display the hotkeys in the HUD")
 
     hud_offset: IntProperty(name="hud_offset", default=100, min=0, description="Offset the HUD by this amount from the top", subtype='PIXEL')
 
