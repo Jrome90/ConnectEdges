@@ -209,7 +209,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             key_text = "Confirm (Space) Cancel (ESC)"
             if not addon_prefs.selection_enabled:
                 key_text = "Confirm (Space or Left Mouse) Cancel (ESC)"
-            label = TextLabel(0, 0, 50 * scale_fac, 16 * scale_fac, scale_fac, key_text, context, use_ui_scale=use_ui_scale)
+            label = TextLabel(0, 0, 50, 16, scale_fac, key_text, context, use_ui_scale=use_ui_scale)
             self.hud.register("label", label)
 
         self.hud.layout()

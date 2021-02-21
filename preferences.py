@@ -86,7 +86,7 @@ class ConnectEdgesPreferences(AddonPreferences):
         layout.label(text="E: Change the even setting.")
         layout.label(text="     Even (In): The distance between all created edges are the same.")
         layout.label(text="     Even (Out): The distance between the outer edges are the same.")
-        layout.label(text="     Even (None): The distance between the edges is based on the edge length of the newly connected edges.")
+        layout.label(text="     Even (No): The distance between the edges is based on the edge length of the newly connected edges.")
 
     @staticmethod
     def get_operator_keymaps():
