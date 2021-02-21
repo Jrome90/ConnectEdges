@@ -130,17 +130,6 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             selection_mode = context.tool_settings.mesh_select_mode
             return selection_mode[1]  # Edge Mode
 
-    # def set_status(self, context):
-    #     def status(header, context):
-    #         layout = header.layout
-    #         layout.label(text=f'Offset: {self.offset:.2f}', icon='MOUSE_MOVE')
-    #         layout.label(text=f'Axis: {self.axis}', icon='EVENT_X')
-    #         layout.label(text='Error', icon='EVENT_Z')
-    #         #utils.ui.statistics(header, context)
-
-    #     context.workspace.status_text_set(status)
-
-
     def set_header(self, context):
         header_text = header(
             f'Segments: {self.segments}',
