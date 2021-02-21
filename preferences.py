@@ -21,6 +21,8 @@ class ConnectEdgesPreferences(AddonPreferences):
     selection_enabled: BoolProperty(name="Enable Selection", default=False, 
                                     description="Enable selection while the operator is running")
 
+    use_rcs: BoolProperty(name="Swap left and right mouse buttons (Enable if you use right click select)", default=False, description="")
+
     show_hud: BoolProperty(name="Display the HUD", default=True, description="Display the HUD in the viewport.")
 
     show_keys: BoolProperty(name="Display Hotkeys", default=False, description="Display the hotkeys in the HUD")
@@ -53,10 +55,12 @@ class ConnectEdgesPreferences(AddonPreferences):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
 
-        
+
+        layout.prop(self, "selection_enabled")
         if addon_prefs.selection_enabled:
             layout.label(text="Warning: Selection can be slow with high poly meshes. Selecting while the operator runs will break both adjust last op and repeat last op for that operator session", icon = 'ERROR')
-        layout.prop(self, "selection_enabled")
+        layout.prop(self, "use_rcs")
+            
 
         layout.prop(self, "show_hud")
         if addon_prefs.show_hud:
@@ -108,3 +112,10 @@ class ConnectEdgesPreferences(AddonPreferences):
             for kmi in km.keymap_items:
                 if "connect_edges" in kmi.idname:
                     rna_keymap_ui.draw_kmi(["ADDON", "USER", "DEFAULT"], kc, km, kmi, col, 0)
+    
+    def get_mouse_select_button(self, reverse=False):
+        if not self.use_rcs:
+            return 'LEFTMOUSE' if not reverse else 'RIGHTMOUSE'
+
+        return 'RIGHTMOUSE' if not reverse else 'LEFTMOUSE'
+        

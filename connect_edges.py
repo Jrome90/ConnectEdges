@@ -219,7 +219,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
 
     def modal(self, context, event):
         addon_prefs = get_addon_prefs(context)
-
+        mouse_select = addon_prefs.get_mouse_select_button()
         if context.area:
             context.area.tag_redraw()
 
@@ -232,13 +232,13 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             if self.pinch_input.handle_event(event):
                 handled = True
 
-            if not handled and event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+            if not handled and event.type == mouse_select and event.value == 'PRESS':
                 self.close_input()
 
             return {'RUNNING_MODAL'}
 
         if self.selection_enabled(context):
-            if (event.type == 'LEFTMOUSE'):
+            if event.type == mouse_select:
                 self.selection_changed = True
                 return {'PASS_THROUGH'}
 
@@ -304,7 +304,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             self.prev_pinch = self.pinch
             self.mouse_started = not self.mouse_started
 
-        elif event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+        elif event.type == addon_prefs.get_mouse_select_button(True) and event.value == 'PRESS':
             mouse_pos = Vector((event.mouse_x, event.mouse_y))
             self.open_input(mouse_pos, context)
 
@@ -317,6 +317,9 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         elif event.type == 'WHEELDOWNMOUSE':
             return {'PASS_THROUGH'}
 
+        elif event.type == 'C':
+            return {'PASS_THROUGH'}
+
         elif event.type == 'E' and event.value == 'PRESS':
             # Get the index associated with a value
             enum_idx = self.even_enum_idx[self.even]
@@ -325,7 +328,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             self.even = value
             self.pinch_edges(context, update=True)
 
-        elif not addon_prefs.selection_enabled and event.type in ('SPACE', 'LEFTMOUSE') and event.value == 'PRESS':
+        elif not addon_prefs.selection_enabled and event.type in ('SPACE', mouse_select) and event.value == 'PRESS':
             return self.finish(context)
 
         elif event.type == 'SPACE' and event.value == 'PRESS':
