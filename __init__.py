@@ -16,7 +16,7 @@ bl_info = {
     "author" : "Jrome",
     "description" : "Creates new edges between adjacent pairs of selected edges",
     "blender" : (2, 90, 0),
-    "version" : (0, 2, 1),
+    "version" : (0, 3, 0),
     "location" : "Mesh > Edge > Connect Edges",
     "warning" : "",
     "category" : "Mesh"
@@ -56,7 +56,7 @@ def register():
 
     # handle the keymap
     kc = bpy.context.window_manager.keyconfigs.addon
-    km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
+    km = kc.keymaps.new(name='Mesh', space_type='EMPTY')
 
     kmi = km.keymap_items.new("mesh.connect_edges", 'C', 'PRESS', alt=True, repeat=False)
 

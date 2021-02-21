@@ -12,13 +12,16 @@ from . bl_ui_widgets.bl_ui_textbox import BL_UI_Textbox
 from . bl_ui_widgets.bl_ui_label import BL_UI_Label
 
 class TextLabel(BL_UI_Label):
-    def __init__(self, x, y, width, height, text, context):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, width, height, scale, text, context, use_ui_scale=False):
+        super().__init__(x, y, width, height, use_ui_scale)
 
         if text is not None:
             self.text = text
 
         self.init(context)
+
+        self.text_size = int(16 * scale)
+
     def init(self, context):
         super().init(context)
 
@@ -32,8 +35,8 @@ class TextLabel(BL_UI_Label):
         self.draw()
 
 class TextLabelProperty(TextLabel):
-    def __init__(self, x, y, width, height, context, initial_val, set_text_func, hotkey_hint=None, show_hotkeys=False):
-        super().__init__(x, y, width, height, None, context)
+    def __init__(self, x, y, width, height, scale ,context, initial_val, set_text_func, use_ui_scale=False, hotkey_hint=None, show_hotkeys=False):
+        super().__init__(x, y, width, height, scale, None, context, use_ui_scale)
         super().init(context)
         self.hotkey_hint = hotkey_hint
         self.show_hotkeys = show_hotkeys
@@ -56,11 +59,11 @@ class TextLabelProperty(TextLabel):
 
 
 class TextLayoutPanel(object):
-    def __init__(self, height, width, position):
+    def __init__(self, height, width, position, scale):
         x, y = position
         self.x_screen = x
         self.y_screen = y
-        self.vertical_spacing = 10
+        self.vertical_spacing = int(10 * scale)
         self.text_objects = OrderedDict()
 
     def register(self, att_name, obj):
@@ -266,3 +269,7 @@ class TextBox(BL_UI_Textbox):
 
     def mouse_up(self, x, y):
         pass
+
+def header(*args):
+    '''Join arguments with ` | ` between each.'''
+    return ' | '.join(args)

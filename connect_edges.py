@@ -8,7 +8,7 @@ from bpy.props import IntProperty, EnumProperty
 from bmesh.types import *
 from mathutils import Vector
 
-from .ui import TextLayoutPanel, TextLabelProperty, TextLabel, TextBox
+from .ui import TextLayoutPanel, TextLabelProperty, TextLabel, TextBox, header
 from .utils import (bmesh_face_loop_walker,
                     bmesh_edge_ring_walker,
                     bmesh_subdivide_edge,
@@ -94,7 +94,8 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
     @segments.setter
     def segments(self, value):
         self.xsegments = value
-        self.subject.notify(self, "Segments", value)
+        if self.subject is not None:
+            self.subject.notify(self, "Segments", value)
 
     @property
     def pinch(self):
@@ -103,7 +104,8 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
     @pinch.setter
     def pinch(self, value):
         self.xpinch = value
-        self.subject.notify(self, "Pinch", value)
+        if self.subject is not None:
+            self.subject.notify(self, "Pinch", value)
 
     @property
     def even(self):
@@ -112,7 +114,8 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
     @even.setter
     def even(self, value):
         self.xeven = value
-        self.subject.notify(self, "Even", value)
+        if self.subject is not None:
+            self.subject.notify(self, "Even", value)
 
     @classmethod
     def setup(cls, context):
@@ -126,6 +129,26 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         if context.mode == 'EDIT_MESH':
             selection_mode = context.tool_settings.mesh_select_mode
             return selection_mode[1]  # Edge Mode
+
+    # def set_status(self, context):
+    #     def status(header, context):
+    #         layout = header.layout
+    #         layout.label(text=f'Offset: {self.offset:.2f}', icon='MOUSE_MOVE')
+    #         layout.label(text=f'Axis: {self.axis}', icon='EVENT_X')
+    #         layout.label(text='Error', icon='EVENT_Z')
+    #         #utils.ui.statistics(header, context)
+
+    #     context.workspace.status_text_set(status)
+
+
+    def set_header(self, context):
+        header_text = header(
+            f'Segments: {self.segments}',
+            f'Pinch: {self.pinch}',
+            f'Even: {self.even}'
+        )
+
+        context.area.header_text_set(header_text)
 
     def draw(self, context):
         layout = self.layout
@@ -157,20 +180,25 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
 
     def init_hud(self, context):
         addon_prefs = get_addon_prefs(context)
-        self.hud = TextLayoutPanel(10, 100, (100, addon_prefs.hud_offset))
+        use_ui_scale = False #addon_prefs.hud_use_ui_scale
+
+        # scale_fac = addon_prefs.hud_scale_fac / 100 if not use_ui_scale else (addon_prefs.hud_scale_fac / 100) * bpy.context.preferences.system.ui_scale
+        scale_fac = addon_prefs.hud_scale_fac / 100
+
+        self.hud = TextLayoutPanel(10, 100, (addon_prefs.hud_offset_x, addon_prefs.hud_offset_y), scale_fac)
 
         show_keys = addon_prefs.show_keys
 
-        draw_segs = TextLabelProperty(0, 0, 50, 16, context, 
-                                      self.segments, lambda new_val: "Segments: {0}".format(new_val), 
+        draw_segs = TextLabelProperty(0, 0, 50, 16, scale_fac, context, 
+                                      self.segments, lambda new_val: "Segments: {0}".format(new_val), use_ui_scale=use_ui_scale,
                                       hotkey_hint="(CTRL + MouseWheel)", show_hotkeys=show_keys)
         
-        draw_pinch = TextLabelProperty(0, 0, 50, 16, context,
-                                       self.pinch, lambda new_val: "Pinch: {0}".format(new_val), 
+        draw_pinch = TextLabelProperty(0, 0, 50, 16, scale_fac, context,
+                                       self.pinch, lambda new_val: "Pinch: {0}".format(new_val), use_ui_scale=use_ui_scale,
                                        hotkey_hint="(CTRL + Mouse)", show_hotkeys=show_keys)
         
-        draw_even = TextLabelProperty(0, 0, 50, 16, context, 
-                                      self.even, lambda new_val: "Even: {0}".format(new_val), 
+        draw_even = TextLabelProperty(0, 0, 50, 16, scale_fac, context, 
+                                      self.even, lambda new_val: "Even: {0}".format(new_val), use_ui_scale=use_ui_scale,
                                       hotkey_hint="(E)", show_hotkeys=show_keys)
         
         self.hud.register("Pinch", draw_pinch)
@@ -178,7 +206,10 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.hud.register("Even", draw_even)
 
         if show_keys:
-            label = TextLabel(0, 0, 50, 16, "Confirm (Space) Cancel (ESC)", context)
+            key_text = "Confirm (Space) Cancel (ESC)"
+            if not addon_prefs.selection_enabled:
+                key_text = "Confirm (Space or Left Mouse) Cancel (ESC)"
+            label = TextLabel(0, 0, 50 * scale_fac, 16 * scale_fac, scale_fac, key_text, context, use_ui_scale=use_ui_scale)
             self.hud.register("label", label)
 
         self.hud.layout()
@@ -187,7 +218,10 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.subject.register(self.hud.update_text)
 
     def invoke(self, context, event):
-        self.init_hud(context)
+        addon_prefs = get_addon_prefs(context)
+        if addon_prefs.show_hud:
+            self.init_hud(context)
+
         self.execute(context)
         context.window_manager.modal_handler_add(self)
         args = (self, context)
@@ -195,6 +229,8 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def modal(self, context, event):
+        addon_prefs = get_addon_prefs(context)
+
         if context.area:
             context.area.tag_redraw()
 
@@ -300,17 +336,22 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             self.even = value
             self.pinch_edges(context, update=True)
 
-        elif event.type == 'SPACE' and event.value == 'PRESS':
-            self.finish(context)
-            return {'FINISHED'}
+        elif not addon_prefs.selection_enabled and event.type in ('SPACE', 'LEFTMOUSE') and event.value == 'PRESS':
+            return self.finish(context)
 
+        elif event.type == 'SPACE' and event.value == 'PRESS':
+            return self.finish(context)
+        
         elif event.type == 'ESC':  # Cancel
-            self.cancelled(context)
-            return {'CANCELLED'}
+            return self.cancelled(context)
+
+        if not addon_prefs.show_hud:
+            self.set_header(context)
 
         return {'RUNNING_MODAL'}
 
     def finish(self, context):
+        context.area.header_text_set(None)
         mesh = context.active_object.data
         bmesh.update_edit_mesh(mesh)
         bpy.ops.mesh.select_all(action='DESELECT')
@@ -324,7 +365,11 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='OBJECT')
         bpy.ops.object.mode_set(mode='EDIT')
 
+        return {'FINISHED'}
+
     def cancelled(self, context):
+        context.area.header_text_set(None)
+
         self.clear()
         self.bm.free()
 
@@ -338,6 +383,8 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
         self.initial_bm.to_mesh(mesh)
         bpy.ops.object.mode_set(mode='EDIT')
         self.initial_bm.free()
+
+        return {'CANCELLED'}
 
     def open_input(self, mouse_pos, context):
         self.segment_input = TextBox(context, 0, 0, 100, 30, "Segments", 3)

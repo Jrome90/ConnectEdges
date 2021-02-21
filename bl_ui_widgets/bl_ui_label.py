@@ -1,15 +1,22 @@
+import bpy
 from . bl_ui_widget import *
 
 import blf
 
 class BL_UI_Label(BL_UI_Widget):
     
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, use_ui_scale=False):
         super().__init__(x, y, width, height)
 
-        self._text_color        = (1.0, 1.0, 1.0, 1.0)
+        self._text_color = (1.0, 1.0, 1.0, 1.0)
         self._text = "Label"
         self._text_size = 16
+
+        dpi = 72
+        if use_ui_scale:
+            dpi = bpy.context.preferences.system.ui_scale
+
+        self._text_dpi = int(dpi)
 
     @property
     def text_color(self):
