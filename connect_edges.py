@@ -696,7 +696,7 @@ class MESH_OT_ConnectEdges(bpy.types.Operator):
             #     if edge.select:
             #         print("Selected: {}".format(edge.index))
             self.bm.select_flush_mode()
-            bmesh.update_edit_mesh(mesh, True)
+            bmesh.update_edit_mesh(mesh, destructive=True)
 
 
         try:
